@@ -17,19 +17,29 @@ const solve = (lastUserValidDate, input) => {
                let decimalIndex = offer.merchants.at(0).distance * 10
                let floorIndex = Math.floor(decimalIndex)
 
-               if (offers.at(floorIndex) == undefined) {
-                    offers[floorIndex] = offer
-               }
-               else {
-                    if (offers.at(floorIndex).category != offer.category) {
-                         offers[floorIndex + 1] = offer
+               while (true) {
+                    console.log(floorIndex)
+                    if (offers.at(floorIndex) == undefined) {
+                         offers[floorIndex] = offer
+                         break
                     }
                     else {
-                         if (offer.merchants.at(0).distance < offers.at(floorIndex).merchants.at(0).distance) {
+                         if (offers.at(floorIndex).category == offer.category && offer.merchants.at(0).distance <= offers.at(floorIndex).merchants.at(0).distance) {
                               offers[floorIndex] = offer
+                              break
+                         }
+                         else if (offers.at(floorIndex).category != offer.category) {
+                              if (offers.at(floorIndex).merchants.at(0).distance > offer.merchants.at(0).distance) {
+                                   offers.splice(floorIndex, 0, offer)
+                                   break
+                              }
+                              else {
+                                   floorIndex += 1
+                              }
                          }
                     }
                }
+              
           }
      });
 
@@ -61,7 +71,7 @@ const main = async () => {
      let result = solve(lastUserValidDate, data.offers)
 
      console.log('\n-> Quick-view result:\n____________________________\n\n', result, '\n____________________________\n')
-     
+
      result = JSON.stringify({
           "offers": result
      })
