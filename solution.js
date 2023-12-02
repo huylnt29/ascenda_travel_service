@@ -2,17 +2,26 @@ import * as readline from 'node:readline/promises'
 import { stdin as input, stdout as output } from 'node:process'
 import fs from 'node:fs'
 import moment from 'moment/moment.js'
-import OfferCategory from './entity.js'
+
+import OfferCategory from './enums.js'
 import QueryOption from './query_option.js'
 import AlgorithmConfiguration from './algorithm_configuration.js'
 
 const isValidDateFormat = (dateString) => moment(dateString, 'YYYY-MM-DD', true).isValid();
+
+const getLastUserValidDate = (rawUserInput) => {
+     let checkInDate = new Date(rawUserInput)
+     let lastUserValidDate = new Date(checkInDate.getTime())
+     lastUserValidDate.setDate(lastUserValidDate.getDate() + QueryOption.userValidDayRange)
+     return lastUserValidDate
+}
 
 const solve = (lastUserValidDate, input) => {
      let offers = []
 
      input.forEach(offer => {
           let offerDate = new Date(offer.valid_to)
+          
           if (!OfferCategory.isEligible(offer.category) || (offerDate < lastUserValidDate)) return
 
           offer.merchants = [offer.merchants.reduce((accumulator, current) => current.distance < accumulator.distance ? current : accumulator)]
@@ -44,13 +53,6 @@ const solve = (lastUserValidDate, input) => {
      offers = offers.filter(element => element != undefined)
 
      return offers.slice(0, QueryOption.maxOffers)
-}
-
-const getLastUserValidDate = (rawUserInput) => {
-     let checkInDate = new Date(rawUserInput)
-     let lastUserValidDate = new Date(checkInDate.getTime())
-     lastUserValidDate.setDate(lastUserValidDate.getDate() + QueryOption.userValidDayRange)
-     return lastUserValidDate
 }
 
 const main = async () => {
