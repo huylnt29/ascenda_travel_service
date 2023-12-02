@@ -18,7 +18,6 @@ const solve = (lastUserValidDate, input) => {
                let floorIndex = Math.floor(decimalIndex)
 
                while (true) {
-                    console.log(floorIndex)
                     if (offers.at(floorIndex) == undefined) {
                          offers[floorIndex] = offer
                          break
