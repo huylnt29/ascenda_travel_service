@@ -4,41 +4,40 @@ import fs from 'node:fs'
 import moment from 'moment/moment.js'
 import OfferCategory from './entity.js'
 import QueryOption from './query_option.js'
+import AlgorithmConfiguration from './algorithm_configuration.js'
 
 const isValidDateFormat = (dateString) => moment(dateString, 'YYYY-MM-DD', true).isValid();
 
 const solve = (lastUserValidDate, input) => {
-     let offers = [] // hash table
+     let offers = []
+
      input.forEach(offer => {
           let offerDate = new Date(offer.valid_to)
-          if (OfferCategory.isEligible(offer.category) && (offerDate >= lastUserValidDate)) {
-               offer.merchants = [offer.merchants.reduce((accumulator, current) => current.distance < accumulator.distance ? current : accumulator)]
+          if (!OfferCategory.isEligible(offer.category) || (offerDate < lastUserValidDate)) return
 
-               let decimalIndex = offer.merchants.at(0).distance * 10
-               let floorIndex = Math.floor(decimalIndex)
+          offer.merchants = [offer.merchants.reduce((accumulator, current) => current.distance < accumulator.distance ? current : accumulator)]
 
-               while (true) {
-                    if (offers.at(floorIndex) == undefined) {
+          let decimalIndex = AlgorithmConfiguration.hash(offer.merchants.at(0).distance)
+          let floorIndex = Math.floor(decimalIndex)
+
+          while (true) {
+               if (offers.at(floorIndex) == undefined) {
+                    offers[floorIndex] = offer
+                    break
+               }
+               else {
+                    if (offers.at(floorIndex).category == offer.category && offer.merchants.at(0).distance <= offers.at(floorIndex).merchants.at(0).distance) {
                          offers[floorIndex] = offer
                          break
                     }
-                    else {
-                         if (offers.at(floorIndex).category == offer.category && offer.merchants.at(0).distance <= offers.at(floorIndex).merchants.at(0).distance) {
-                              offers[floorIndex] = offer
+                    else if (offers.at(floorIndex).category != offer.category) {
+                         if (offers.at(floorIndex).merchants.at(0).distance > offer.merchants.at(0).distance) {
+                              offers.splice(floorIndex, 0, offer)
                               break
                          }
-                         else if (offers.at(floorIndex).category != offer.category) {
-                              if (offers.at(floorIndex).merchants.at(0).distance > offer.merchants.at(0).distance) {
-                                   offers.splice(floorIndex, 0, offer)
-                                   break
-                              }
-                              else {
-                                   floorIndex += 1
-                              }
-                         }
+                         else floorIndex += 1
                     }
                }
-              
           }
      });
 
@@ -58,7 +57,7 @@ const main = async () => {
      const rl = readline.createInterface({ input, output });
      let rawUserInput;
      while (!isValidDateFormat(rawUserInput)) {
-          rawUserInput = await rl.question('\n<- User check-in date? ')
+          rawUserInput = await rl.question('\n<- Type in user check-in date? ')
      }
      rl.close();
 
@@ -76,7 +75,7 @@ const main = async () => {
      })
 
      fs.writeFile('output.json', result, () => {
-          console.log('-> The file has been written!\n');
+          console.log('-> The output.json file has been written!\n');
      });
 }
 
