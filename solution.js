@@ -3,6 +3,7 @@ import { stdin as input, stdout as output } from 'node:process'
 import fs from 'node:fs'
 import moment from 'moment/moment.js'
 import OfferCategory from './entity.js'
+import QueryOption from './query_option.js'
 
 const isValidDateFormat = (dateString) => moment(dateString, 'YYYY-MM-DD', true).isValid();
 
@@ -34,15 +35,16 @@ const solve = (lastUserValidDate, input) => {
 
      offers = offers.filter(element => element != undefined)
 
-     return offers.slice(0, 2)
+     return offers.slice(0, QueryOption.maxOffers)
 }
 
 const getLastUserValidDate = (rawUserInput) => {
      let checkInDate = new Date(rawUserInput)
      let lastUserValidDate = new Date(checkInDate.getTime())
-     lastUserValidDate.setDate(lastUserValidDate.getDate() + 5)
+     lastUserValidDate.setDate(lastUserValidDate.getDate() + QueryOption.userValidDayRange)
      return lastUserValidDate
 }
+
 const main = async () => {
      const rl = readline.createInterface({ input, output });
      let rawUserInput;
